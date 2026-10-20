@@ -10,6 +10,23 @@ export function normalizeContent(content) {
     // Normalize \r\n to \n
     content = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 
+    // Some models use ampersands instead of line breaks throughout JSX/JS output.
+    // Treat it as a delimiter only when the output has the clear repeated pattern.
+    const ampersandCount = (content.match(/&/g) || []).length;
+    if (ampersandCount > 12 && /;\s*&\s*(?:import|const|return)\b/.test(content)) {
+        content = content.replace(/&/g, "\n");
+    }
+
+    // Repair a common malformed JSX style string into a style object.
+    content = content.replace(
+        /style=['"]\{\{\s*animationDelay:\s*['"]([^'"]+)['"]\s*\}\}['"]/g,
+        'style={{ animationDelay: "$1" }}',
+    );
+    content = content.replace(
+        /style=\{\{\s*animationDelay:\s*['"]([^'"]+)['"]\s*>>/g,
+        'style={{ animationDelay: "$1" }}>',
+    );
+
     const realNewlines = (content.match(/\n/g) || []).length;
     const literalBackslashN = (content.match(/\\n/g) || []).length;
 

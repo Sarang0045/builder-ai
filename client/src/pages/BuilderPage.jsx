@@ -21,7 +21,7 @@ const BuilderPage = () => {
   const [publishing, setPublishing] = useState(false);
   const [publishUrl, setPublishUrl] = useState(null);
 
-  const {activeProject, loadingActiveProject, activeFile, showCode, setActiveFile, setShowCode, loadProject, logout, chatLoading, handleChat} = useAppContext();
+  const {activeProject, loadingActiveProject, activeFile, showCode, setActiveFile, setShowCode, loadProject, logout, chatLoading, handleChat, retryGeneration, retryingGeneration} = useAppContext();
 
 
 
@@ -113,7 +113,7 @@ const BuilderPage = () => {
         {/* Preview / Code Area */}
         <div className="flex-1 overflow-hidden">
             {activeProject.status === "pending" || activeProject.status === "generating" || activeProject.status === "failed" ? (
-              <AgentProgressDashboard project={activeProject}/>
+              <AgentProgressDashboard project={activeProject} onRetry={() => retryGeneration(activeProject._id)} retrying={retryingGeneration}/>
             ) : (
               <PreviewPanel project={activeProject} activeFile={activeFile} showCode={showCode}/>
             )}

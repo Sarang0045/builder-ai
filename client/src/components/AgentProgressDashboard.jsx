@@ -1,6 +1,6 @@
-import { CheckCircle2Icon, CircleIcon, Loader2Icon } from "lucide-react";
+import { CheckCircle2Icon, CircleIcon, Loader2Icon, RotateCcwIcon } from "lucide-react";
 
-export default function AgentProgressDashboard({ project }) {
+export default function AgentProgressDashboard({ project, onRetry, retrying = false }) {
     const planned = project.filesPlanned || [];
     const completed = project.filesGenerated || [];
     const current = project.currentFile;
@@ -29,6 +29,18 @@ export default function AgentProgressDashboard({ project }) {
                     <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg text-sm text-red-700 font-medium">
                         Error: {project.error}
                     </div>
+                )}
+
+                {isFailed && onRetry && (
+                    <button
+                        type="button"
+                        onClick={onRetry}
+                        disabled={retrying}
+                        className="mb-6 inline-flex items-center gap-2 rounded-lg bg-zinc-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        {retrying ? <Loader2Icon size={15} className="animate-spin" /> : <RotateCcwIcon size={15} />}
+                        {retrying ? "Restarting..." : "Retry generation"}
+                    </button>
                 )}
 
                 {/* Progress bar */}

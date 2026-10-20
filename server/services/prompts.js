@@ -228,6 +228,10 @@ Good copy makes design feel premium. Follow these rules:
 - Never use TypeScript syntax (no interfaces, no types, no \`: React.FC\`, no \`as\`, no \`public/private\`). Output ONLY plain JavaScript/React.
 - Do NOT import packages that aren't react, react-dom, or standard sub-components.
 - Every component must return valid JSX wrapped in parentheses: \`return ( <div>...</div> );\`
+- If a component renders sibling elements, wrap them in a single \`<>...</>\` fragment inside the return.
+- Write source code with real line breaks. Never use \`&\` characters as line or element separators.
+- Inline React styles must be valid objects, e.g. \`style={{ animationDelay: '0.1s' }}\`; never quote the object as a string.
+- Finish every tag, expression, function, and file. Never stop output inside an attribute or JSX element.
 - Always import React: \`import React from 'react';\`
 - For event handlers, reference functions that are actually defined in scope, or use inline functions: \`onClick={() => {}}\`.`;
 
