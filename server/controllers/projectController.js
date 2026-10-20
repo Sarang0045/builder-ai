@@ -61,6 +61,61 @@ export async function createProject(req, res){
 }
 
 // Background worker to progressive generate files and update database in real-time.
+// Retry a failed generation with the project's original prompt.
+export async function retryProjectGeneration(req, res){
+    const project = await Project.findOne({ _id: req.params.id, owner: req.user.userId });
+
+    if(!project){
+        res.status(404).json({ error: "Project not found" });
+        return;
+    }
+
+    if(project.status !== "failed"){
+        res.status(409).json({ error: "Only failed generations can be retried" });
+        return;
+    }
+
+    const originalPrompt = project.messages.find((message) => message.role === "user")?.content;
+    if(!originalPrompt){
+        res.status(400).json({ error: "The original project prompt is missing" });
+        return;
+    }
+
+    project.name = "Planning project...";
+    project.files = {};
+    project.version = 0;
+    project.status = "pending";
+    project.filesPlanned = [];
+    project.filesGenerated = [];
+    project.currentFile = null;
+    project.error = null;
+    project.messages = [
+        { role: "user", content: originalPrompt, timestamp: new Date() },
+        { role: "assistant", content: "Planning project structure...", timestamp: new Date() },
+    ];
+    project.markModified("files");
+    await project.save();
+
+    runBackgroundGeneration(project._id.toString(), originalPrompt).catch((err) => {
+        console.error(`[Background AI] Retry failed for project ${project._id}:`, err);
+    });
+
+    res.status(202).json({
+        _id: project._id,
+        name: project.name,
+        description: project.description,
+        files: {},
+        messages: project.messages,
+        version: project.version,
+        status: project.status,
+        filesPlanned: project.filesPlanned,
+        filesGenerated: project.filesGenerated,
+        currentFile: project.currentFile,
+        error: project.error,
+        createdAt: project.createdAt,
+    });
+}
+
 async function runBackgroundGeneration(projectId, prompt){
     try {
         console.log(`[Background AI] Starting generation for project ${projectId}`);

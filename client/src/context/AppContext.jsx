@@ -22,6 +22,7 @@ export function AppContextProvider({children}){
      const [loadingActiveProject, setLoadingActiveProject] = useState(true);
      const [chatLoading, setChatLoading] = useState(false);
      const [generatingProject, setGeneratingProject] = useState(false);
+     const [retryingGeneration, setRetryingGeneration] = useState(false);
      const [activeFile, setActiveFile] = useState("/App.js");
      const [showCode, setShowCode] = useState(false);
 
@@ -200,6 +201,20 @@ export function AppContextProvider({children}){
         },[activeProject, user]
        )
 
+      const retryGeneration = async (projectId) => {
+        setRetryingGeneration(true);
+        try {
+            const { data } = await api.post(`/api/projects/${projectId}/retry`);
+            setActiveProject(data);
+            toast.success("Generation restarted");
+        } catch (err) {
+            console.error("Generation retry failed:", err);
+            toast.error(err?.response?.data?.error || "Could not retry generation");
+        } finally {
+            setRetryingGeneration(false);
+        }
+      }
+
        const debouncedSave = React.useMemo(
         ()=>debounce(async (files, id) => {
             try {
@@ -236,6 +251,7 @@ export function AppContextProvider({children}){
             loadingActiveProject,
             chatLoading,
             generatingProject,
+            retryingGeneration,
             activeFile,
             showCode,
             setActiveFile,
@@ -246,7 +262,8 @@ export function AppContextProvider({children}){
             handleDelete,
             logout,
             updateProjectFiles,
-            handleChat
+            handleChat,
+            retryGeneration
         }}>
             {children}
         </AppContext.Provider>
